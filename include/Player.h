@@ -20,6 +20,8 @@ public:
     virtual void update() override;
     virtual void render(SDL_Renderer* renderer) override;
 
+    void toggleWeapon();
+
     void triggerDamageBlink();
     
     Inventory inventory;

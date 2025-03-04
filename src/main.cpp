@@ -66,6 +66,14 @@ int main(int argc, char* argv[]) {
             if (event.type == SDL_QUIT)
                 running = false;
 
+            if (event.type == SDL_MOUSEBUTTONDOWN)
+            {
+                if (event.button.button == SDL_BUTTON_RIGHT)
+                    player.toggleWeapon();
+                if (event.button.button == SDL_BUTTON_LEFT)
+                    attackTriggered = true;
+            }
+
             // Toggle de pantalla completa con F11.
             if (event.type == SDL_KEYDOWN && !event.key.repeat){
                 if (event.key.keysym.scancode == SDL_SCANCODE_F11) {
@@ -90,7 +98,7 @@ int main(int argc, char* argv[]) {
 
         if (!bowPickup.pickedUp && checkCollision(player.rect.x, player.rect.y, player.rect.w, player.rect.h, bowPickup.rect.x, bowPickup.rect.y, bowPickup.rect.w, bowPickup.rect.h))
         {
-            player.currentWeapon = bowPickup.weapon;
+            player.inventory.addWeapon(bowPickup.weapon);
             bowPickup.pickedUp = true;
             std::cout << "Has recogido el arco\n";
         }

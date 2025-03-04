@@ -122,6 +122,19 @@ void Player::render(SDL_Renderer* renderer) {
     SDL_RenderFillRect(renderer, &rect);
 }
 
+void Player::toggleWeapon()
+{
+    if (inventory.getWeapons().empty())
+    {
+        std::cout << "No hay arma alternativa en el inventario. \n";
+        return;
+    }
+    Weapon temp = currentWeapon;
+    currentWeapon = inventory.getWeapons()[0];
+    inventory.getWeapons()[0] = temp;
+    std::cout << "Se ha cambiado a: " << currentWeapon.name << "\n";
+}
+
 void Player::triggerDamageBlink()
 {
     damageTime = SDL_GetTicks();
