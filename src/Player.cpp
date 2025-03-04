@@ -1,8 +1,10 @@
 #include "Player.h"
+#include "Projectile.h"
+#include <cmath>
+#include <iostream>
 
-// Inicializa el jugador con la posición, tamaño y velocidad indicados.
-Player::Player(int x, int y, int w, int h, int speed)
-    : speed(speed), horizontal(0), vertical(0)
+Player::Player(int x, int y, int w, int h, int health, int speed, const Weapon& weapon)
+    : Mob(x, y, w, h, health, speed), currentWeapon(weapon), speed(speed), horizontal(0), vertical(0), damageTime(0)
 {
     rect.x = x;
     rect.y = y;
@@ -63,6 +65,30 @@ void Player::processEvent(const SDL_Event& event) {
     }
 }
 
+void Player::attack(std::vector<Projectile>& projectiles) {
+    if (currentWeapon.type == WeaponType::Melee) {
+        std::cout << "Ataque cuerpo a cuerpo con " << currentWeapon.name << "!\n";
+        // La detección de colisiones se procesa en el main.
+    } else if (currentWeapon.type == WeaponType::Ranged) {
+        int mouseX, mouseY;
+        SDL_GetMouseState(&mouseX, &mouseY);
+        int centerX = rect.x + rect.w / 2;
+        int centerY = rect.y + rect.h / 2;
+        float diffX = static_cast<float>(mouseX - centerX);
+        float diffY = static_cast<float>(mouseY - centerY);
+        float length = std::sqrt(diffX * diffX + diffY * diffY);
+        float normX = 0, normY = 0;
+        if (length != 0) {
+            normX = diffX / length;
+            normY = diffY / length;
+        } else {
+            normY = -1; // Valor por defecto
+        }
+        projectiles.push_back(Projectile(centerX, centerY, normX, normY, currentWeapon.damage));
+        std::cout << "Ataque a distancia con " << currentWeapon.name << "!\n";
+    }
+}
+
 // Actualiza la posición del jugador según la dirección almacenada.
 // Se normaliza la velocidad en el caso de movimiento diagonal.
 void Player::update() {
@@ -81,6 +107,22 @@ void Player::update() {
 
 // Renderiza el jugador como un rectángulo blanco.
 void Player::render(SDL_Renderer* renderer) {
+    // Configuramos constantes para el parpadeo
+    const Uint32 BLINK_DURATION = 500; // Duración total del parpadeo
+    const Uint32 BLINK_INTERVAL = 100; // Intervalo de parpadeo en ms
+
+    Uint32 now = SDL_GetTicks();
+    // Si se activó el parpadeo y estamos dentro del periodo, alternamos el renderizado.
+    if(now - damageTime < BLINK_DURATION)
+    {
+        if (((now - damageTime) / BLINK_INTERVAL)% 2 == 0)
+            return;
+    }
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderFillRect(renderer, &rect);
+}
+
+void Player::triggerDamageBlink()
+{
+    damageTime = SDL_GetTicks();
 }
