@@ -16,14 +16,14 @@ Player::Player(int x, int y, int w, int h, int health, int speed,
       vertical(0),
       damageTime(0),
       meleeAttackTime(0),
-      lastAttackAngle(0)
+      lastAttackAngle(0),
+      lastAttackTime(0)
 {
     rect.x = x;
     rect.y = y;
     rect.w = w;
     rect.h = h;
-    // Por defecto, arma activa es la melee.
-    activeWeapon = &this->meleeWeapon;
+    activeWeapon = &this->meleeWeapon;  // Por defecto, arma activa es la melee.
 }
 
 void Player::processEvent(const SDL_Event& event) {
@@ -76,7 +76,16 @@ void Player::processEvent(const SDL_Event& event) {
     }
 }
 
-void Player::attack(std::vector<Projectile>& projectiles, std::vector<Enemy>& enemies) {
+void Player::attack(std::vector<Projectile>& projectiles, std::vector<Enemy>& enemies)
+{
+    Uint32 now = SDL_GetTicks();
+
+    if (now - lastAttackTime < ATTACK_COOLDOWN)
+    {
+        return;
+    }
+    lastAttackTime = now;
+
     if (activeWeapon->type == WeaponType::Melee) {
         meleeAttack(enemies);
     } else {  // Ataque a distancia.
