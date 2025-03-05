@@ -38,10 +38,12 @@ int main(int argc, char* argv[]) {
     Weapon defaultWeapon("Espada Basica", 10, WeaponType::Melee);
     
     // Instanciar el jugador en el centro de la ventana.
-    Player player(400, 300, 30, 30, 100, 5, defaultWeapon);
+    Weapon meleeWeapon("Espada basica", 10, WeaponType::Melee, 0,0,0,0);
+    Weapon distanceWeapon("Arco Simple", 8, WeaponType::Ranged, 0,0,0,0);
+    Player player(400, 300, 30, 30, 100, 5, meleeWeapon, distanceWeapon);
 
     // Agregamos un arma a distancia al inventario
-    Weapon bow("Arco simple", 8, WeaponType::Ranged);
+    Weapon bow("Arco Avanzado", 12, WeaponType::Ranged, 200, 200, 30, 30);
     WeaponPickup bowPickup(200, 200, 30, 30, bow);
 
     // Creamos algunos enemigos
@@ -100,7 +102,7 @@ int main(int argc, char* argv[]) {
         {
             player.inventory.addWeapon(bowPickup.weapon);
             bowPickup.pickedUp = true;
-            std::cout << "Has recogido el arco\n";
+            std::cout << "Has recogido un " << bowPickup.weapon.name <<"\n";
         }
         for (auto& enemy : enemies)
         {
@@ -139,23 +141,7 @@ int main(int argc, char* argv[]) {
         // Procesar ataque cuando se presiona SPACE
         if (attackTriggered)
         {
-            if (player.currentWeapon.type == WeaponType::Melee)
-            {
-                for (auto& enemy: enemies)
-                {
-                    if (checkCollision(player.rect.x, player.rect.y, player.rect.w, player.rect.h, enemy.x, enemy.y, enemy.width, enemy.height))
-                    {
-                        enemy.health -= player.currentWeapon.damage;
-                        enemy.triggerDamageBlink();
-                        std::cout <<"Ataque melee, salud enemigo: " << enemy.health << "\n";
-                        if (enemy.health <= 0)
-                            enemy.alive = false;
-                    }
-                }
-            }else
-            {
-                player.attack(projectiles);
-            }
+            player.attack(projectiles, enemies);
             attackTriggered = false;
         }
 

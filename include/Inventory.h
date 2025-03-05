@@ -10,9 +10,6 @@ public:
     void addWeapon(const Weapon& weapon);
     void listItems();
 
-    std::vector<Weapon>& getWeapons() { return weapons;}
-    
-private:
     std::vector<Weapon> weapons;
 };
 
