@@ -14,7 +14,9 @@ Player::Player(int x, int y, int w, int h, int health, int speed,
       speed(speed),
       horizontal(0),
       vertical(0),
-      damageTime(0)
+      damageTime(0),
+      meleeAttackTime(0),
+      lastAttackAngle(0)
 {
     rect.x = x;
     rect.y = y;
@@ -99,7 +101,11 @@ void Player::meleeAttack(std::vector<Enemy>& enemies) {
     int centerY = rect.y + rect.h / 2;
     float attackAngle = std::atan2(static_cast<float>(mouseY - centerY), static_cast<float>(mouseX - centerX));
     
-    const float meleeRange = 100.0f; // Rango máximo del ataque.
+    // Guardamos el ángulo y la hora del ataque para el efecto visual.
+    lastAttackAngle = attackAngle;
+    meleeAttackTime = SDL_GetTicks();
+    
+    const float meleeRange = 100.0f; // Rango máximo del ataque melee.
     const float arcHalfAngle = 30.0f * (PI / 180.0f); // 30° a cada lado (60° total).
     
     for (auto& enemy : enemies) {
@@ -114,7 +120,8 @@ void Player::meleeAttack(std::vector<Enemy>& enemies) {
         
         float enemyAngle = std::atan2(dy, dx);
         float angleDiff = std::fabs(attackAngle - enemyAngle);
-        if (angleDiff > PI) angleDiff = 2 * PI - angleDiff;
+        if (angleDiff > PI)
+            angleDiff = 2 * PI - angleDiff;
         
         if (angleDiff <= arcHalfAngle) {
             enemy.health -= activeWeapon->damage;
@@ -142,6 +149,7 @@ void Player::update() {
 }
 
 void Player::render(SDL_Renderer* renderer) {
+    // Primero, renderizamos el jugador.
     const Uint32 BLINK_DURATION = 500;
     const Uint32 BLINK_INTERVAL = 100;
     Uint32 now = SDL_GetTicks();
@@ -151,6 +159,31 @@ void Player::render(SDL_Renderer* renderer) {
     }
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderFillRect(renderer, &rect);
+    
+    // Si se realizó un ataque melee recientemente, dibujamos el indicador del área de ataque.
+    if (now - meleeAttackTime < MELEE_ATTACK_DURATION) {
+        // Definimos los parámetros del ataque melee (mismos que en meleeAttack).
+        const float meleeRange = 100.0f;
+        const float arcHalfAngle = 30.0f * (PI / 180.0f);
+        
+        int centerX = rect.x + rect.w / 2;
+        int centerY = rect.y + rect.h / 2;
+        
+        // Calculamos los puntos límite del ataque.
+        float leftAngle = lastAttackAngle - arcHalfAngle;
+        float rightAngle = lastAttackAngle + arcHalfAngle;
+        
+        int leftX = centerX + static_cast<int>(meleeRange * std::cos(leftAngle));
+        int leftY = centerY + static_cast<int>(meleeRange * std::sin(leftAngle));
+        int rightX = centerX + static_cast<int>(meleeRange * std::cos(rightAngle));
+        int rightY = centerY + static_cast<int>(meleeRange * std::sin(rightAngle));
+        
+        // Establecemos un color (por ejemplo, rojo) y dibujamos el triángulo.
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+        SDL_RenderDrawLine(renderer, centerX, centerY, leftX, leftY);
+        SDL_RenderDrawLine(renderer, centerX, centerY, rightX, rightY);
+        SDL_RenderDrawLine(renderer, leftX, leftY, rightX, rightY);
+    }
 }
 
 void Player::toggleWeapon() {

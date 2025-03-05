@@ -23,7 +23,7 @@ public:
     // Ejecuta el ataque: si el arma activa es melee, se usa meleeAttack; si es a distancia, se dispara un proyectil.
     void attack(std::vector<Projectile>& projectiles, std::vector<Enemy>& enemies);
     
-    // Realiza un ataque melee en forma de arco en la dirección del ratón.
+    // Realiza un ataque melee en forma de arco en la dirección del ratón y actualiza el indicador visual.
     void meleeAttack(std::vector<Enemy>& enemies);
     
     virtual void update() override;
@@ -51,6 +51,11 @@ private:
     int horizontal;
     int vertical;
     Uint32 damageTime;
+    
+    // Para el efecto visual del ataque melee.
+    Uint32 meleeAttackTime;
+    float lastAttackAngle; // Ángulo en el momento del ataque melee.
+    static const Uint32 MELEE_ATTACK_DURATION = 100; // Duración en milisegundos
 };
 
 #endif
