@@ -26,7 +26,8 @@ Player::Player(int x, int y, int w, int h, int health, int speed,
     activeWeapon = &this->meleeWeapon;  // Por defecto, arma activa es la melee.
 }
 
-void Player::processEvent(const SDL_Event& event) {
+void Player::processEvent(const SDL_Event& event)
+{
     if (event.type == SDL_KEYDOWN && !event.key.repeat) {
         switch (event.key.keysym.scancode) {
             case SDL_SCANCODE_W:
@@ -80,7 +81,7 @@ void Player::attack(std::vector<Projectile>& projectiles, std::vector<Enemy>& en
 {
     Uint32 now = SDL_GetTicks();
 
-    if (now - lastAttackTime < ATTACK_COOLDOWN)
+    if (now - lastAttackTime < activeWeapon->cooldown)
     {
         return;
     }
@@ -99,11 +100,11 @@ void Player::attack(std::vector<Projectile>& projectiles, std::vector<Enemy>& en
         float normX = (length != 0) ? diffX / length : 0;
         float normY = (length != 0) ? diffY / length : -1;
         projectiles.push_back(Projectile(centerX, centerY, normX, normY, activeWeapon->damage));
-        std::cout << "Ataque a distancia con " << activeWeapon->name << "!\n";
     }
 }
 
-void Player::meleeAttack(std::vector<Enemy>& enemies) {
+void Player::meleeAttack(std::vector<Enemy>& enemies)
+{
     int mouseX, mouseY;
     SDL_GetMouseState(&mouseX, &mouseY);
     int centerX = rect.x + rect.w / 2;
@@ -114,7 +115,7 @@ void Player::meleeAttack(std::vector<Enemy>& enemies) {
     lastAttackAngle = attackAngle;
     meleeAttackTime = SDL_GetTicks();
     
-    const float meleeRange = 100.0f; // Rango máximo del ataque melee.
+    const float meleeRange = activeWeapon->alcance; // Rango máximo del ataque melee.
     const float arcHalfAngle = 30.0f * (PI / 180.0f); // 30° a cada lado (60° total).
     
     for (auto& enemy : enemies) {
@@ -135,14 +136,25 @@ void Player::meleeAttack(std::vector<Enemy>& enemies) {
         if (angleDiff <= arcHalfAngle) {
             enemy.health -= activeWeapon->damage;
             enemy.triggerDamageBlink();
-            std::cout << "Ataque melee en arco: enemigo dañado, salud: " << enemy.health << "\n";
             if (enemy.health <= 0)
                 enemy.alive = false;
         }
     }
 }
 
-void Player::update() {
+void Player::receiveDamage(int damage)
+{
+    Uint32 now = SDL_GetTicks();
+    if (now - damageTime >= DAMAGE_COOLDOWN)
+    {
+        health -= damage;
+        triggerDamageBlink();
+        damageTime = now;
+    }
+}
+
+void Player::update()
+{
     float dx = horizontal * speed;
     float dy = vertical * speed;
     if (horizontal != 0 && vertical != 0) {
@@ -157,7 +169,8 @@ void Player::update() {
     if (rect.y > 600 - rect.h) rect.y = 600 - rect.h;
 }
 
-void Player::render(SDL_Renderer* renderer) {
+void Player::render(SDL_Renderer* renderer)
+{
     // Primero, renderizamos el jugador.
     const Uint32 BLINK_DURATION = 500;
     const Uint32 BLINK_INTERVAL = 100;
@@ -195,15 +208,16 @@ void Player::render(SDL_Renderer* renderer) {
     }
 }
 
-void Player::toggleWeapon() {
+void Player::toggleWeapon()
+{
     // Alterna entre meleeWeapon y distanceWeapon.
     if (activeWeapon == &meleeWeapon)
         activeWeapon = &distanceWeapon;
     else
         activeWeapon = &meleeWeapon;
-    std::cout << "Arma activa cambiada a: " << activeWeapon->name << "\n";
 }
 
-void Player::triggerDamageBlink() {
+void Player::triggerDamageBlink()
+{
     damageTime = SDL_GetTicks();
 }

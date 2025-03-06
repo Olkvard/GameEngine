@@ -1,14 +1,21 @@
 #include "Enemy.h"
 #include "Player.h"
 
-Enemy::Enemy(int x, int y, int w, int h, int health, int speed)
-    : Mob(x, y, w, h, health, speed), alive(true), damageTime(0) {}
+Enemy::Enemy(int x, int y, int w, int h, int health, int speed, int fuerza, int level)
+    : Mob(x, y, w, h, health, speed),
+      alive(true),
+      damageTime(0),
+      fuerza(fuerza),
+      level(level)
+{}
 
-void Enemy::update() {
+void Enemy::update()
+{
     // La IA (como chase) se invoca desde el main.
 }
 
-void Enemy::render(SDL_Renderer* renderer) {
+void Enemy::render(SDL_Renderer* renderer)
+{
     const Uint32 BLINK_DURATION = 500;
     const Uint32 BLINK_INTERVAL = 100;
 
@@ -24,7 +31,8 @@ void Enemy::render(SDL_Renderer* renderer) {
     SDL_RenderFillRect(renderer, &rect);
 }
 
-void Enemy::chase(const Player& player) {
+void Enemy::chase(const Player& player)
+{
     int targetX = player.rect.x + player.rect.w / 2;
     int targetY = player.rect.y + player.rect.h / 2;
     int enemyCenterX = x + width / 2;

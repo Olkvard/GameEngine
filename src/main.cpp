@@ -9,9 +9,11 @@
 #include "Weapon.h"
 #include "WeaponPickup.h"
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
     // Inicializar SDL (video).
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+    if (SDL_Init(SDL_INIT_VIDEO) != 0)
+    {
         std::cerr << "Error al inicializar SDL: " << SDL_GetError() << std::endl;
         return 1;
     }
@@ -20,7 +22,8 @@ int main(int argc, char* argv[]) {
     SDL_Window* window = SDL_CreateWindow("Kamos_Game",
                                           SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                           800, 600, SDL_WINDOW_SHOWN);
-    if (!window) {
+    if (!window)
+    {
         std::cerr << "Error al crear la ventana: " << SDL_GetError() << std::endl;
         SDL_Quit();
         return 1;
@@ -28,28 +31,27 @@ int main(int argc, char* argv[]) {
     
     // Crear el renderizador acelerado por hardware.
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    if (!renderer) {
+    if (!renderer)
+    {
         std::cerr << "Error al crear el renderer: " << SDL_GetError() << std::endl;
         SDL_DestroyWindow(window);
         SDL_Quit();
         return 1;
     }
-    // Instanciamos una espada básica como arma del personaje
-    Weapon defaultWeapon("Espada Basica", 10, WeaponType::Melee);
     
     // Instanciar el jugador en el centro de la ventana.
-    Weapon meleeWeapon("Espada basica", 10, WeaponType::Melee, 0,0,0,0);
-    Weapon distanceWeapon("Arco Simple", 8, WeaponType::Ranged, 0,0,0,0);
+    Weapon meleeWeapon("Espada basica", 10, WeaponType::Melee, 400, 70.0f, "común", 1, 0,0,0,0);
+    Weapon distanceWeapon("Arco Simple", 8, WeaponType::Ranged, 600, 0.0f, "común", 1, 0,0,0,0);
     Player player(400, 300, 30, 30, 100, 5, meleeWeapon, distanceWeapon);
 
     // Agregamos un arma a distancia al inventario
-    Weapon bow("Arco Avanzado", 12, WeaponType::Ranged, 200, 200, 30, 30);
+    Weapon bow("Arco Avanzado", 12, WeaponType::Ranged, 800, 0.0f, "poco común", 1, 200, 200, 30, 30);
     WeaponPickup bowPickup(200, 200, 30, 30, bow);
 
     // Creamos algunos enemigos
     std::vector<Enemy> enemies;
-    enemies.push_back(Enemy(100, 100, 30, 30, 50, 2));
-    enemies.push_back(Enemy(200, 200, 30, 30, 50, 2));
+    enemies.push_back(Enemy(100, 100, 30, 30, 50, 2, 5, 1));
+    enemies.push_back(Enemy(200, 200, 30, 30, 50, 2, 5, 1));
 
     // Vector para almacenar proyectiles
     std::vector<Projectile> projectiles;
@@ -57,17 +59,22 @@ int main(int argc, char* argv[]) {
 
     bool running = true;
     bool fullscreen = false;
+    bool gameOver = false;
     SDL_Event event;
     bool attackTriggered = false;
     int windowWidth = 0, windowHeight = 0;
+    Uint32 deathTime = 0;
     
     // Loop principal del motor.
-    while (running) {
-        while (SDL_PollEvent(&event)) {
+    while (running)
+    {
+        while (SDL_PollEvent(&event))
+        {
             // Salir si se cierra la ventana.
             if (event.type == SDL_QUIT)
                 running = false;
-
+            
+            // Cambio de arma y ataque
             if (event.type == SDL_MOUSEBUTTONDOWN)
             {
                 if (event.button.button == SDL_BUTTON_RIGHT)
@@ -77,16 +84,17 @@ int main(int argc, char* argv[]) {
             }
 
             // Toggle de pantalla completa con F11.
-            if (event.type == SDL_KEYDOWN && !event.key.repeat){
-                if (event.key.keysym.scancode == SDL_SCANCODE_F11) {
+            if (event.type == SDL_KEYDOWN && !event.key.repeat)
+            {
+                if (event.key.keysym.scancode == SDL_SCANCODE_F11)
+                {
                     fullscreen = !fullscreen;
                     if (fullscreen)
                         SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
                     else
                         SDL_SetWindowFullscreen(window, 0);
                 }
-                if (event.key.keysym.scancode == SDL_SCANCODE_SPACE)
-                    attackTriggered = true;
+                // Muestra el inventario.
                 if (event.key.keysym.scancode == SDL_SCANCODE_E)
                     player.inventory.listItems();
             }
@@ -98,30 +106,39 @@ int main(int argc, char* argv[]) {
         // Actualiza la lógica del jugador.
         player.update();
 
+        // Gestiona la recogida del item bow.
         if (!bowPickup.pickedUp && checkCollision(player.rect.x, player.rect.y, player.rect.w, player.rect.h, bowPickup.rect.x, bowPickup.rect.y, bowPickup.rect.w, bowPickup.rect.h))
         {
             player.inventory.addWeapon(bowPickup.weapon);
             bowPickup.pickedUp = true;
-            std::cout << "Has recogido un " << bowPickup.weapon.name <<"\n";
         }
-        for (auto& enemy : enemies)
+
+        for (auto& enemy : enemies) // Hace que los enemigos persigan al jugador.
         {
             enemy.chase(player);
         }
 
-        for(auto& enemy : enemies)
+        for(auto& enemy : enemies)  // Evita la superposición de los enemigos con el jugador y le hace daño en caso de estar superpuestos
         {
             SDL_Rect playerRect = player.rect;
             SDL_Rect enemyRect = { enemy.x, enemy.y, enemy.width, enemy.height};
             if(checkCollision(playerRect.x, playerRect.y, playerRect.w, playerRect.h, enemyRect.x, enemyRect.y, enemyRect.w, enemyRect.h))
             {
+                player.receiveDamage(enemy.fuerza);
                 resolveRectCollision(enemyRect, playerRect);
                 enemy.x = enemyRect.x;
                 enemy.y = enemyRect.y;
             }
         }
 
-        for (size_t i = 0; i < enemies.size(); ++i)
+        if (!gameOver && player.health <= 0)
+        {
+            gameOver = true;
+            deathTime = SDL_GetTicks();
+            std::cout << "Game Over. El jugador ha muerto. \n";
+        }
+
+        for (size_t i = 0; i < enemies.size(); ++i) // Evita la superposición entre los enemigos.
         {
             for(size_t j = i +1; j < enemies.size(); ++j)
             {
@@ -138,7 +155,7 @@ int main(int argc, char* argv[]) {
 
         SDL_GetWindowSize(window, &windowWidth, &windowHeight);
 
-        // Procesar ataque cuando se presiona SPACE
+        // Procesar ataque
         if (attackTriggered)
         {
             player.attack(projectiles, enemies);
@@ -162,7 +179,6 @@ int main(int argc, char* argv[]) {
                     enemy.health -= proj.damage;
                     proj.alive = false;
                     enemy.triggerDamageBlink();
-                    std::cout << "Proyectil, salud enemigo: " << enemy.health << "\n";
                     if (enemy.health <= 0)
                         enemy.alive = false;
                 }
@@ -171,6 +187,14 @@ int main(int argc, char* argv[]) {
 
         // Eliminar enemigos muertos
         enemies.erase(std::remove_if(enemies.begin(), enemies.end(), [](const Enemy& e) { return !e.alive; }), enemies.end());
+
+        if (gameOver)   // Si el jugador ha muerto cerramos el programa después de 3 segundos.
+        {
+            if(SDL_GetTicks() - deathTime >= 3000)
+            {
+                running = false;
+            }
+        }
         
         // Renderizado: limpiar la pantalla, dibujar al jugador y presentar el frame.
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);

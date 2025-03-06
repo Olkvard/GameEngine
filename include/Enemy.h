@@ -9,7 +9,7 @@ class Player;
 
 class Enemy : public Mob {
 public:
-    Enemy(int x, int y, int w, int h, int health, int speed);
+    Enemy(int x, int y, int w, int h, int health, int speed, int fuerza, int level);
     
     virtual void update() override;
     virtual void render(SDL_Renderer* renderer) override;
@@ -19,6 +19,8 @@ public:
     void triggerDamageBlink();
     
     bool alive;
+    int fuerza;
+    int level;
 
 private:
 

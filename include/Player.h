@@ -24,6 +24,7 @@ public:
     virtual void render(SDL_Renderer* renderer) override;
     void toggleWeapon();    // Alterna entre el arma melee y la a distancia.
     void triggerDamageBlink();  // Activa el efecto de parpadeo (blink) al recibir daño.
+    void receiveDamage(int damage); // Se encarga de gestionar el daño que recibe el jugador.
     
     Inventory inventory;    // Inventario del personaje
     Weapon meleeWeapon; // Armas fijas del personaje.
@@ -42,7 +43,7 @@ private:
     Uint32 lastAttackTime;
     
     static const Uint32 MELEE_ATTACK_DURATION = 100;    // Duración en milisegundos
-    static const Uint32 ATTACK_COOLDOWN = 500;
+    static const Uint32 DAMAGE_COOLDOWN = 500;
 };
 
 #endif
