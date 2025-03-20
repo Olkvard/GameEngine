@@ -20,7 +20,7 @@ public:
     void processEvent(const SDL_Event& event);  // Procesa eventos (teclado) para el movimiento.
     void attack(std::vector<Projectile>& projectiles, std::vector<Enemy>& enemies); // Ejecuta el ataque: si el arma activa es melee, se usa meleeAttack; si es a distancia, se dispara un proyectil.
     void meleeAttack(std::vector<Enemy>& enemies);  // Realiza un ataque melee en forma de arco en la dirección del ratón y actualiza el indicador visual.
-    virtual void update() override;
+    virtual void update(int windowWidth, int windowHeight) override;
     virtual void render(SDL_Renderer* renderer) override;
     void toggleWeapon();    // Alterna entre el arma melee y la a distancia.
     void triggerDamageBlink();  // Activa el efecto de parpadeo (blink) al recibir daño.

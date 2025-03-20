@@ -9,7 +9,7 @@ Enemy::Enemy(int x, int y, int w, int h, int health, int speed, int fuerza, int 
       level(level)
 {}
 
-void Enemy::update()
+void Enemy::update(int windowWidth, int windowHeight)
 {
     // La IA (como chase) se invoca desde el main.
 }

@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
     // Crear la ventana.
     SDL_Window* window = SDL_CreateWindow("Kamos_Game",
                                           SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                                          800, 600, SDL_WINDOW_SHOWN);
+                                          1920, 1080, SDL_WINDOW_SHOWN);
     if (!window)
     {
         std::cerr << "Error al crear la ventana: " << SDL_GetError() << std::endl;
@@ -104,7 +104,7 @@ int main(int argc, char* argv[])
         }
         
         // Actualiza la lógica del jugador.
-        player.update();
+        player.update(windowWidth, windowHeight);
 
         // Gestiona la recogida del item bow.
         if (!bowPickup.pickedUp && checkCollision(player.rect.x, player.rect.y, player.rect.w, player.rect.h, bowPickup.rect.x, bowPickup.rect.y, bowPickup.rect.w, bowPickup.rect.h))

@@ -6,7 +6,7 @@ public:
     Mob(int x, int y, int w, int h, int health, int speed);
     virtual ~Mob() = default;
     
-    virtual void update() = 0;
+    virtual void update(int windowWidth, int windowHeight) = 0;
     virtual void render(class SDL_Renderer* renderer) = 0;
     
     int x, y;

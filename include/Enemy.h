@@ -11,7 +11,7 @@ class Enemy : public Mob {
 public:
     Enemy(int x, int y, int w, int h, int health, int speed, int fuerza, int level);
     
-    virtual void update() override;
+    virtual void update(int windowWidth, int windowHeight) override;
     virtual void render(SDL_Renderer* renderer) override;
     
     // Movimiento básico para perseguir al jugador

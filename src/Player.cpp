@@ -153,7 +153,7 @@ void Player::receiveDamage(int damage)
     }
 }
 
-void Player::update()
+void Player::update(int windowWidth, int windowHeight)
 {
     float dx = horizontal * speed;
     float dy = vertical * speed;
@@ -165,8 +165,8 @@ void Player::update()
     rect.y += static_cast<int>(dy);
     if (rect.x < 0) rect.x = 0;
     if (rect.y < 0) rect.y = 0;
-    if (rect.x > 800 - rect.w) rect.x = 800 - rect.w;
-    if (rect.y > 600 - rect.h) rect.y = 600 - rect.h;
+    if (rect.x > windowWidth - rect.w) rect.x = windowWidth - rect.w;
+    if (rect.y > windowHeight - rect.h) rect.y = windowHeight - rect.h;
 }
 
 void Player::render(SDL_Renderer* renderer)
@@ -185,7 +185,7 @@ void Player::render(SDL_Renderer* renderer)
     // Si se realizó un ataque melee recientemente, dibujamos el indicador del área de ataque.
     if (now - meleeAttackTime < MELEE_ATTACK_DURATION) {
         // Definimos los parámetros del ataque melee (mismos que en meleeAttack).
-        const float meleeRange = 100.0f;
+        const float meleeRange = activeWeapon->alcance;
         const float arcHalfAngle = 30.0f * (PI / 180.0f);
         
         int centerX = rect.x + rect.w / 2;
